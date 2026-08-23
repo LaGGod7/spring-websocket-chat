@@ -1,62 +1,160 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>WS</title>-->
+<!--    <style>-->
+<!--        *{-->
+<!--            color: black;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div id="usernamePage">-->
+
+<!--    <h1>ENTER YOUR USERNAME</h1>-->
+
+<!--    <form id="usernameForm">-->
+
+<!--        <input-->
+<!--                id="name"-->
+<!--                placeholder="Enter username"-->
+<!--        >-->
+
+<!--        <button type="submit">-->
+<!--            Join-->
+<!--        </button>-->
+
+<!--    </form>-->
+
+<!--</div>-->
+
+
+<!--<div id="chatPage" style="display: none;">-->
+
+<!--    <ul id="messageArea"></ul>-->
+
+<!--    <form id="messageForm">-->
+<!--        <input-->
+<!--                id="message"-->
+<!--                placeholder="Type a message"-->
+<!--        />-->
+
+<!--        <button type="submit">-->
+<!--            Send-->
+<!--        </button>-->
+<!--    </form>-->
+
+<!--</div>-->
+<!--<div id="userList">-->
+<!--    <h3>Online Users</h3>-->
+<!--    <ul id="users"></ul>-->
+<!--    <button onclick="sendPrivateMessage()">-->
+<!--        Send Private Message to Rahul-->
+<!--    </button>-->
+
+<!--</div>-->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>-->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>-->
+<!--<script src="/main.js"></script>-->
+
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WS</title>
-    <style>
-        *{
-            color: black;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="usernamePage">
 
-    <h1>ENTER YOUR USERNAME</h1>
+<div class="app">
 
-    <form id="usernameForm">
+    <!-- Username screen -->
+    <section id="usernamePage" class="card username-card">
+        <div class="brand">⚡ Realtime Chat</div>
+        <p class="subtitle">Connect and start chatting</p>
 
-        <input
-                id="name"
-                placeholder="Enter username"
-        >
+        <form id="usernameForm">
+            <input id="name" type="text" placeholder="Enter your username" autocomplete="off">
+            <button type="submit">Join Chat</button>
+        </form>
+    </section>
 
-        <button type="submit">
-            Join
-        </button>
+    <!-- Chat screen -->
+    <section id="chatPage" class="chat-layout" style="display:none;">
 
-    </form>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div>
+                    <h2>Chat</h2>
+                    <span class="online-status">● Online</span>
+                </div>
+                <span class="user-badge">●</span>
+            </div>
+
+            <div class="section-title">ONLINE USERS</div>
+
+            <ul id="users" class="user-list"></ul>
+        </aside>
+
+        <!-- Main chat -->
+        <main class="chat-panel">
+
+            <header class="chat-header">
+                <div>
+                    <h2 id="chatTitle">Public Chat</h2>
+                    <p id="chatSubtitle">Everyone can see these messages</p>
+                </div>
+
+                <div class="tabs">
+                    <button id="publicTab" class="tab active" type="button">
+                        Public
+                    </button>
+                    <button id="privateTab" class="tab" type="button">
+                        Private
+                    </button>
+                </div>
+            </header>
+
+            <!-- Public messages -->
+            <div id="publicChat" class="chat-view active-view">
+                <ul id="messageArea" class="message-list"></ul>
+            </div>
+
+            <!-- Private messages -->
+            <div id="privateChat" class="chat-view">
+                <div id="privateEmpty" class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <h3>Select someone to chat</h3>
+                    <p>Choose an online user from the left.</p>
+                </div>
+
+                <ul id="privateMessageArea" class="message-list"></ul>
+            </div>
+
+            <!-- Message input -->
+            <form id="messageForm" class="message-form">
+                <input
+                        id="message"
+                        type="text"
+                        placeholder="Write a message..."
+                        autocomplete="off"
+                >
+                <button type="submit" aria-label="Send message">➤</button>
+            </form>
+
+        </main>
+    </section>
 
 </div>
 
-
-<div id="chatPage" style="display: none;">
-
-    <ul id="messageArea"></ul>
-
-    <form id="messageForm">
-        <input
-                id="message"
-                placeholder="Type a message"
-        />
-
-        <button type="submit">
-            Send
-        </button>
-    </form>
-
-</div>
-<div id="userList">
-    <h3>Online Users</h3>
-    <ul id="users"></ul>
-    <button onclick="sendPrivateMessage()">
-        Send Private Message to Rahul
-    </button>
-
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-<script src="/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script src="main.js"></script>
 
 </body>
 </html>
