@@ -1,180 +1,4 @@
-// 'use strict';
-// const usernameForm = document.querySelector('#usernameForm');
-// const usernameInput = document.querySelector('#name');
-// const usernamePage =
-//     document.querySelector('#usernamePage');
-// const chatPage = document.querySelector('#chatPage');
-// const users = document.querySelector('#users');
-// const messageForm = document.querySelector('#messageForm');
-// const messageInput = document.querySelector('#message');
-//
-// const messageArea = document.querySelector('#messageArea');
-// let selectedUser = null;
-// let username = null;
-// let stompClient = null;
-//
-// function connect(event) {
-//     event.preventDefault();
-//     username = usernameInput.value.trim();
-//     if (!username) return;
-//     const socket = new SockJS("/ws");
-//     stompClient = Stomp.over(socket);
-//     stompClient.connect({username: username}, onConnected);
-//
-// }
-//
-// function onConnected() {
-//     console.log("Connected to WebSocket!");
-//     stompClient.subscribe('/topic/public', onMessageReceived);
-//     stompClient.subscribe('/topic/users', onUsersReceived);
-//     stompClient.subscribe('/user/queue/message', onPrivateMessage);
-//     stompClient.send("/app/chat.addUser", {}, JSON.stringify({sender: username, messageType: 'JOIN'}))
-//     usernameForm.style.display = 'none';
-//     usernamePage.style.display = 'none';
-//     chatPage.style.display = 'block';
-//
-// }
-//
-// function onPrivateMessage(payload) {
-//
-//     console.log("🔥 PRIVATE MESSAGE RECEIVED");
-//
-//     const message = JSON.parse(payload.body);
-//
-//     console.log(message);
-// }
-//
-// function sendPrivateMessage() {
-//     if (!selectedUser) {
-//         console.log("Select a user first");
-//         return;
-//     }
-//
-//     const message = {
-//         sender: username,
-//         recipient: selectedUser,
-//         content: "Hello Rahul!",
-//         messageType: "CHAT"
-//     };
-//     if (!message.content) {
-//         return;
-//     }
-//
-//     stompClient.send(
-//         "/app/chat.privateMessage",
-//         {},
-//         JSON.stringify(message)
-//     );
-//     messageInput.value = '';
-// }
-//
-// function selectUser(user) {
-//
-//     selectedUser = user;
-//
-//     console.log("Selected user:", selectedUser);
-//     console.log("PRIVATE CHAT WITH:", selectedUser);
-// }
-//
-// function onUsersReceived(payload) {
-//     const userList = JSON.parse(payload.body);
-//     users.innerHTML = '';
-//     userList.forEach(user => {
-//         if (user === username) {
-//             return;
-//         }
-//         const userElement = document.createElement('li');
-//         userElement.textContent = user;
-//         userElement.addEventListener(
-//             'click',
-//             () => selectUser(user)
-//         );
-//         users.appendChild(userElement);
-//     })
-//     console.log("ONLINE USERS:", users);
-// }
-//
-// function onMessageReceived(payload) {
-//
-//     const chatMessage = JSON.parse(payload.body);
-//
-//     console.log(
-//         "TYPE:", chatMessage.type,
-//         "SENDER:", chatMessage.sender,
-//         "CONTENT:", chatMessage.content
-//     );
-//
-//     const messageElement = document.createElement('li');
-//
-//     if (chatMessage.messageType === "JOIN") {
-//         messageElement.textContent =
-//             chatMessage.sender + " joined the chat";
-//
-//     } else if (chatMessage.messageType === "LEAVE") {
-//         messageElement.textContent =
-//             chatMessage.sender + " left the chat";
-//
-//     } else if (chatMessage.messageType === "CHAT") {
-//         messageElement.textContent =
-//             chatMessage.sender + ": " +
-//             chatMessage.content;
-//     }
-//
-//     messageArea.appendChild(messageElement);
-// }
-//
-// function sendMessage(event) {
-//
-//     event.preventDefault();
-//     const messageContent = messageInput.value.trim();
-//     if (!messageContent || !stompClient) return;
-//     if (selectedUser) {
-//
-//         // PRIVATE MESSAGE
-//
-//         const chatMessage = {
-//             sender: username,
-//             recipient: selectedUser,
-//             content: messageContent,
-//             messageType: 'CHAT'
-//         };
-//
-//         stompClient.send(
-//             "/app/chat.privateMessage",
-//             {},
-//             JSON.stringify(chatMessage)
-//         );
-//
-//     }
-//     else {
-//
-//         // PUBLIC MESSAGE
-//
-//         const chatMessage = {
-//             sender: username,
-//             content: messageContent,
-//             messageType: 'CHAT'
-//         };
-//
-//         stompClient.send(
-//             "/app/chat.sendMessage",
-//             {},
-//             JSON.stringify(chatMessage)
-//         );
-//     }
-//     messageInput.value = '';
-//
-// }
-//
-//
-// usernameForm.addEventListener(
-//     'submit',
-//     connect
-// );
-// messageForm.addEventListener(
-//     'submit',
-//     sendMessage
-// );
+
 'use strict';
 
 const usernameForm = document.querySelector('#usernameForm');
@@ -203,6 +27,9 @@ const chatSubtitle = document.querySelector('#chatSubtitle');
 let selectedUser = null;
 let username = null;
 let stompClient = null;
+let onlineUsers = [];
+
+const conversations ={};
 
 function connect(event) {
     event.preventDefault();
@@ -219,6 +46,7 @@ function connect(event) {
         onConnected
     );
 }
+
 
 function onConnected() {
     console.log("Connected to WebSocket!");
@@ -256,27 +84,35 @@ function onPrivateMessage(payload) {
     const message = JSON.parse(payload.body);
 
     console.log("PRIVATE MESSAGE:", message);
+    // 1. Always store it
+    storePrivateMessage(message);
 
-    const messageElement = document.createElement('li');
-    messageElement.classList.add('private-message');
+    // 2. Find which conversation it belongs to
+    const conversationUser =
+        message.sender === username
+            ? message.recipient
+            : message.sender;
 
-    messageElement.textContent =
-        message.sender + ": " + message.content;
 
-    privateMessageArea.appendChild(messageElement);
+        // 3. Only render if we're looking at that conversation
+        if (conversationUser === selectedUser) {
+            loadConversation(selectedUser);
+            privateEmpty.style.display = 'none';
+            showPrivateChat();
+        }
 
-    privateEmpty.style.display = 'none';
 
-    // If we are already talking to this person, keep private tab open.
-    if (message.sender === selectedUser) {
-        showPrivateChat();
-    }
 }
 
 function selectUser(user) {
     selectedUser = user;
 
     console.log("Selected user:", selectedUser);
+    if (conversations[user]) {
+        conversations[user].unread = 0;
+    }
+    renderUsers();
+    loadConversation(user);
 
     document.querySelectorAll('#users li').forEach(element => {
         element.classList.remove('selected');
@@ -291,20 +127,31 @@ function selectUser(user) {
     chatTitle.textContent = "Chat with " + user;
     chatSubtitle.textContent = "Private conversation";
 }
-
-function onUsersReceived(payload) {
-    const userList = JSON.parse(payload.body);
-
+function renderUsers(userList) {
     users.innerHTML = '';
 
-    userList.forEach(user => {
+    onlineUsers.forEach(user => {
         if (user === username) {
             return;
         }
 
         const userElement = document.createElement('li');
 
-        userElement.textContent = user;
+        const nameElement = document.createElement('span');
+        nameElement.textContent = user;
+
+        userElement.appendChild(nameElement);
+
+        const conversation = conversations[user];
+
+        if (conversation && conversation.unread > 0) {
+            const badge = document.createElement('span');
+
+            badge.textContent = conversation.unread;
+            badge.classList.add('unread-badge');
+
+            userElement.appendChild(badge);
+        }
 
         if (user === selectedUser) {
             userElement.classList.add('selected');
@@ -317,6 +164,14 @@ function onUsersReceived(payload) {
 
         users.appendChild(userElement);
     });
+}
+
+function onUsersReceived(payload) {
+    const userList = JSON.parse(payload.body);
+
+    onlineUsers = userList;
+
+    renderUsers();
 
     console.log("ONLINE USERS:", userList);
 }
@@ -325,6 +180,7 @@ function onMessageReceived(payload) {
     const chatMessage = JSON.parse(payload.body);
 
     const messageElement = document.createElement('li');
+    messageElement.classList.add('public-message');
 
     if (chatMessage.messageType === "JOIN") {
         messageElement.textContent =
@@ -342,7 +198,14 @@ function onMessageReceived(payload) {
         messageElement.textContent =
             chatMessage.sender + ": " +
             chatMessage.content;
+        const timestampElement =
+            document.createElement('small');
+
+        timestampElement.textContent =
+            formatTimestamp(chatMessage.timestamp);
+        messageElement.appendChild(timestampElement);
     }
+
 
     messageArea.appendChild(messageElement);
 }
@@ -361,7 +224,8 @@ function sendMessage(event) {
             sender: username,
             recipient: selectedUser,
             content: messageContent,
-            messageType: 'CHAT'
+            messageType: 'CHAT',
+            timestamp: new Date().toISOString()
         };
 
         stompClient.send(
@@ -369,21 +233,25 @@ function sendMessage(event) {
             {},
             JSON.stringify(chatMessage)
         );
-
-        // Show own private message immediately.
-        const messageElement = document.createElement('li');
-        messageElement.classList.add('private-message');
-        messageElement.textContent =
-            username + ": " + messageContent;
-
-        privateMessageArea.appendChild(messageElement);
+        console.log("BEFORE STORE:", chatMessage);
+        storePrivateMessage(chatMessage);
+        loadConversation(selectedUser);
         privateEmpty.style.display = 'none';
+        // // Show own private message immediately.
+        // const messageElement = document.createElement('li');
+        // messageElement.classList.add('private-message');
+        // messageElement.textContent =
+        //     username + ": " + messageContent;
+        //
+        // privateMessageArea.appendChild(messageElement);
+        // privateEmpty.style.display = 'none';
 
     } else {
         const chatMessage = {
             sender: username,
             content: messageContent,
-            messageType: 'CHAT'
+            messageType: 'CHAT',
+            timestamp: new Date().toISOString()
         };
 
         stompClient.send(
@@ -395,8 +263,39 @@ function sendMessage(event) {
 
     messageInput.value = '';
 }
+function formatTimestamp(timestamp) {
+
+    const date = new Date(timestamp);
+
+    return date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+function loadConversation(user) {
+    privateMessageArea.innerHTML = '';
+    const messages = conversations[user]?.messages || [];
+    messages.forEach(message => {
+
+        const messageElement =
+            document.createElement('li');
+        messageElement.classList.add('private-message');
+
+
+        messageElement.textContent =
+            message.sender + ": " +
+            message.content;
+        const timestampElement =
+            document.createElement('small');
+        timestampElement.textContent =
+            formatTimestamp(message.timestamp);
+        messageElement.appendChild(timestampElement);
+        privateMessageArea.appendChild(messageElement);
+    });
+}
 
 function showPublicChat() {
+    selectedUser = null;
     publicChat.classList.add('active-view');
     privateChat.classList.remove('active-view');
 
@@ -405,6 +304,7 @@ function showPublicChat() {
 
     chatTitle.textContent = "Public Chat";
     chatSubtitle.textContent = "Everyone can see these messages";
+    renderUsers();
 }
 
 function showPrivateChat() {
@@ -418,6 +318,24 @@ function showPrivateChat() {
         chatTitle.textContent = "Chat with " + selectedUser;
         chatSubtitle.textContent = "Private conversation";
     }
+}
+function storePrivateMessage(message) {
+
+    const conversationUser = message.sender === username?message.recipient:message.sender;
+    if (!conversations[conversationUser]) {
+        conversations[conversationUser] = {
+            messages: [],
+            unread: 0
+        };
+    }
+
+    conversations[conversationUser].messages.push(message);
+    if (conversationUser !== selectedUser) {
+        conversations[conversationUser].unread++;
+    }
+    renderUsers();
+    console.log("STORED FOR:", conversationUser);
+    console.log("ALL CONVERSATIONS:", conversations);
 }
 
 publicTab.addEventListener('click', showPublicChat);

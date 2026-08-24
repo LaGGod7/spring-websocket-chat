@@ -22,7 +22,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
             String username =
                     accessor.getFirstNativeHeader("username");
-            System.out.println("CONNECT USER = [" + username + "]");
+
 
             if (username != null && !username.isBlank()) {
                 accessor.setUser(() -> username);

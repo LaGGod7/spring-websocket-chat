@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @org.springframework.stereotype.Controller
@@ -18,6 +19,7 @@ public class Controller {
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/public")
     public Message sendMessage(@Payload Message message){
+        message.setTimestamp(LocalDateTime.now());
         return message;
     }
 
@@ -35,8 +37,9 @@ public class Controller {
     }
     @MessageMapping("/chat.privateMessage")
     public void sendPrivateMessage(@Payload Message message, Principal principal){
-        System.out.println("CURRENT USER: " + principal.getName());
-        System.out.println("RECIPIENT: " + message.getRecipient());
+//        System.out.println("CURRENT USER: " + principal.getName());
+//        System.out.println("RECIPIENT: " + message.getRecipient());
+        message.setTimestamp(LocalDateTime.now());
             messagingTemplate.convertAndSendToUser(message.getRecipient(),"/queue/message",message);
     }
 
