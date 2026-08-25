@@ -235,7 +235,8 @@ function sendMessage(event) {
         );
         console.log("BEFORE STORE:", chatMessage);
         storePrivateMessage(chatMessage);
-        loadConversation(selectedUser);
+        renderConversations(selectedUser);
+
         privateEmpty.style.display = 'none';
         // // Show own private message immediately.
         // const messageElement = document.createElement('li');
@@ -272,9 +273,16 @@ function formatTimestamp(timestamp) {
         minute: '2-digit'
     });
 }
-function loadConversation(user) {
+async function loadConversation(user) {
+
+    const response = await fetch(`/messages/${username}/${user}`);
+    const messages =await response.json();
+    conversations[user]={
+        messages:messages,
+        unread:0
+    };
     privateMessageArea.innerHTML = '';
-    const messages = conversations[user]?.messages || [];
+    // const messages = conversations[user]?.messages || [];
     messages.forEach(message => {
 
         const messageElement =
@@ -292,6 +300,25 @@ function loadConversation(user) {
         messageElement.appendChild(timestampElement);
         privateMessageArea.appendChild(messageElement);
     });
+}
+function renderConversations(user){
+    privateMessageArea.innerHTML ="";
+    const messages = conversations[user]?.messages||[];
+    messages.forEach(message=>{
+        const messageElement = document.createElement('li');
+        messageElement.classList.add("private-message");
+        messageElement.textContent=message.sender+": "+message.content;
+        const timestampElement =
+            document.createElement('small');
+
+        timestampElement.textContent =
+            formatTimestamp(message.timestamp);
+
+        messageElement.appendChild(timestampElement);
+
+        privateMessageArea.appendChild(messageElement);
+
+    })
 }
 
 function showPublicChat() {
