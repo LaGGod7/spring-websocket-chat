@@ -96,28 +96,28 @@
 //
 // function onMessageReceived(payload) {
 //
-//     const chatMessage = JSON.parse(payload.body);
+//     const message = JSON.parse(payload.body);
 //
 //     console.log(
-//         "TYPE:", chatMessage.type,
-//         "SENDER:", chatMessage.sender,
-//         "CONTENT:", chatMessage.content
+//         "TYPE:", message.type,
+//         "SENDER:", message.sender,
+//         "CONTENT:", message.content
 //     );
 //
 //     const messageElement = document.createElement('li');
 //
-//     if (chatMessage.messageType === "JOIN") {
+//     if (message.messageType === "JOIN") {
 //         messageElement.textContent =
-//             chatMessage.sender + " joined the chat";
+//             message.sender + " joined the chat";
 //
-//     } else if (chatMessage.messageType === "LEAVE") {
+//     } else if (message.messageType === "LEAVE") {
 //         messageElement.textContent =
-//             chatMessage.sender + " left the chat";
+//             message.sender + " left the chat";
 //
-//     } else if (chatMessage.messageType === "CHAT") {
+//     } else if (message.messageType === "CHAT") {
 //         messageElement.textContent =
-//             chatMessage.sender + ": " +
-//             chatMessage.content;
+//             message.sender + ": " +
+//             message.content;
 //     }
 //
 //     messageArea.appendChild(messageElement);
@@ -132,7 +132,7 @@
 //
 //         // PRIVATE MESSAGE
 //
-//         const chatMessage = {
+//         const message = {
 //             sender: username,
 //             recipient: selectedUser,
 //             content: messageContent,
@@ -142,7 +142,7 @@
 //         stompClient.send(
 //             "/app/chat.privateMessage",
 //             {},
-//             JSON.stringify(chatMessage)
+//             JSON.stringify(message)
 //         );
 //
 //     }
@@ -150,7 +150,7 @@
 //
 //         // PUBLIC MESSAGE
 //
-//         const chatMessage = {
+//         const message = {
 //             sender: username,
 //             content: messageContent,
 //             messageType: 'CHAT'
@@ -159,7 +159,7 @@
 //         stompClient.send(
 //             "/app/chat.sendMessage",
 //             {},
-//             JSON.stringify(chatMessage)
+//             JSON.stringify(message)
 //         );
 //     }
 //     messageInput.value = '';

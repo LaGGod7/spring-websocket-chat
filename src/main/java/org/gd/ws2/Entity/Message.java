@@ -3,7 +3,6 @@ package org.gd.ws2.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 
 
@@ -18,12 +17,18 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String sender;
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    private String recipient;
+
+
+    @ManyToOne
+    @JoinColumn(name = "conversation_id")
+    private Conversation conversation;
 
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
