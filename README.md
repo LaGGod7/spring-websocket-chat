@@ -492,3 +492,70 @@ http://localhost:8082
 ```
 
 Open the application in your browser and create an account.
+## 🧪 Running Tests
+
+Run the complete test suite using:
+
+```bash
+./mvnw test
+```
+
+On Windows:
+
+```bash
+mvnw.cmd test
+```
+
+The project contains **12 unit tests** covering the core application logic:
+
+- JWT generation and validation
+- JWT username extraction
+- Conversation creation and retrieval
+- Conversation members
+- User registration
+- Duplicate username handling
+- Successful login
+- Incorrect password handling
+- Private message persistence and delivery
+
+---
+
+## 🔒 Security
+
+The application implements:
+
+- BCrypt password hashing
+- JWT-based authentication
+- Custom JWT authentication filter
+- Protected REST endpoints
+- WebSocket authentication
+- Authenticated WebSocket principals
+- Jakarta Bean Validation
+- Global exception handling
+- DTO-based WebSocket communication
+
+Sensitive values such as database credentials and JWT secrets should be supplied through environment-specific configuration and should not be committed to source control.
+
+---
+
+## 🎯 Project Goals
+
+This project was built to gain practical experience with:
+
+- Building REST APIs using Spring Boot
+- Implementing JWT authentication
+- Securing applications with Spring Security
+- Implementing realtime communication using WebSocket/STOMP
+- Working with PostgreSQL and JPA/Hibernate
+- Designing DTO-based communication
+- Managing persistent conversations and messages
+- Writing unit tests with JUnit 5 and Mockito
+- Building a frontend that communicates with a Java backend
+
+---
+
+## 👨‍💻 Author
+
+**GD**
+
+Built using the Spring ecosystem with realtime WebSocket communication, JWT security, PostgreSQL persistence, and automated unit testing.
