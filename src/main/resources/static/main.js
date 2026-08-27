@@ -25,6 +25,26 @@ const chatTitle = document.querySelector('#chatTitle');
 const chatSubtitle = document.querySelector('#chatSubtitle');
 const passwordInput =
     document.querySelector("#password");
+const registerForm =
+    document.querySelector('#registerForm');
+
+const registerNameInput =
+    document.querySelector('#registerName');
+
+const registerPasswordInput =
+    document.querySelector('#registerPassword');
+
+const showRegisterButton =
+    document.querySelector('#showRegister');
+
+const showLoginButton =
+    document.querySelector('#showLogin');
+
+const registerSwitch =
+    document.querySelector('#registerSwitch');
+
+const authSubtitle =
+    document.querySelector('#authSubtitle');
 let selectedUser = null;
 let username = null;
 let stompClient = null;
@@ -98,7 +118,59 @@ function onConnected() {
     usernamePage.style.display = 'none';
     chatPage.style.display = 'grid';
 }
+async function register(event) {
 
+    event.preventDefault();
+
+    const username =
+        registerNameInput.value.trim();
+
+    const password =
+        registerPasswordInput.value.trim();
+
+    if (!username || !password) {
+        alert("Username and password are required");
+        return;
+    }
+
+    const response = await fetch("/auth/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    });
+
+    if (!response.ok) {
+
+        const message = await response.text();
+
+        alert(
+            message || "Registration failed"
+        );
+
+        return;
+    }
+
+    alert("Account created successfully!");
+
+    registerForm.style.display = 'none';
+    registerSwitch.style.display = 'none';
+
+    usernameForm.style.display = 'flex';
+    document.querySelector('.auth-switch').style.display = 'block';
+
+    authSubtitle.textContent =
+        "Login to start chatting";
+
+    usernameInput.value = username;
+    passwordInput.value = '';
+
+    registerPasswordInput.value = '';
+}
 function onPrivateMessage(payload) {
     const message = JSON.parse(payload.body);
 
@@ -408,4 +480,42 @@ usernameForm.addEventListener(
 messageForm.addEventListener(
     'submit',
     sendMessage
+);
+showRegisterButton.addEventListener(
+    'click',
+    () => {
+
+        usernameForm.style.display = 'none';
+
+        document.querySelector('.auth-switch')
+            .style.display = 'none';
+
+        registerForm.style.display = 'flex';
+
+        registerSwitch.style.display = 'block';
+
+        authSubtitle.textContent =
+            "Create your account";
+    }
+);
+showLoginButton.addEventListener(
+    'click',
+    () => {
+
+        registerForm.style.display = 'none';
+
+        registerSwitch.style.display = 'none';
+
+        usernameForm.style.display = 'flex';
+
+        document.querySelector('.auth-switch')
+            .style.display = 'block';
+
+        authSubtitle.textContent =
+            "Login to start chatting";
+    }
+);
+registerForm.addEventListener(
+    'submit',
+    register
 );

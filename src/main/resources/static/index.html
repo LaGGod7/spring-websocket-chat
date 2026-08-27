@@ -13,18 +13,75 @@
 
     <!-- Username screen -->
     <section id="usernamePage" class="card username-card">
-        <div class="brand">⚡ Realtime Chat</div>
-        <p class="subtitle">Connect and start chatting</p>
 
+        <div class="brand">⚡ Realtime Chat</div>
+        <p id="authSubtitle" class="subtitle">
+            Login to start chatting
+        </p>
+
+        <!-- Login -->
         <form id="usernameForm">
-            <input id="name" type="text" placeholder="Enter your username" autocomplete="off">
+
+            <input
+                    id="name"
+                    type="text"
+                    placeholder="Enter your username"
+                    autocomplete="off"
+            >
+
             <input
                     type="password"
                     id="password"
                     placeholder="Password"
             >
-            <button type="submit">Join Chat</button>
+
+            <button type="submit">
+                Login
+            </button>
+
         </form>
+
+        <p class="auth-switch">
+            Don't have an account?
+            <button id="showRegister" type="button">
+                Register
+            </button>
+        </p>
+
+
+        <!-- Register -->
+        <form id="registerForm" style="display:none;">
+
+            <input
+                    id="registerName"
+                    type="text"
+                    placeholder="Choose a username"
+                    autocomplete="off"
+            >
+
+            <input
+                    id="registerPassword"
+                    type="password"
+                    placeholder="Choose a password"
+            >
+
+            <button type="submit">
+                Create Account
+            </button>
+
+        </form>
+
+        <p
+                id="registerSwitch"
+                class="auth-switch"
+                style="display:none;"
+        >
+            Already have an account?
+            <button id="showLogin" type="button">
+                Login
+            </button>
+        </p>
+
     </section>
 
     <!-- Chat screen -->

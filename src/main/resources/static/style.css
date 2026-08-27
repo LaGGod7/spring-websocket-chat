@@ -53,12 +53,23 @@ button {
     margin-bottom: 28px;
 }
 
-#usernameForm {
+#usernameForm,#registerForm {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
+.auth-switch {
+    margin-top: 18px;
+    color: #6b7280;
+    font-size: 13px;
+}
 
+.auth-switch button {
+    border: 0;
+    background: transparent;
+    color: #4f46e5;
+    font-weight: 700;
+}
 input {
     width: 100%;
     border: 1px solid #d7dce5;
@@ -73,7 +84,7 @@ input:focus {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
-#usernameForm button {
+#usernameForm button,#registerForm button {
     border: 0;
     border-radius: 10px;
     padding: 13px;
@@ -82,7 +93,7 @@ input:focus {
     font-weight: 700;
 }
 
-#usernameForm button:hover {
+#usernameForm button:hover,#registerForm button:hover{
     background: #4338ca;
 }
 
