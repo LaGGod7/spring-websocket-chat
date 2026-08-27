@@ -127,10 +127,12 @@ The application follows a layered backend architecture.
                     ┌─────────────────┐
                     │   PostgreSQL    │
                     └─────────────────┘
-🔐 Authentication Flow
+```
+## 🔐 Authentication Flow
 
 The application uses JWT-based authentication for securing HTTP and WebSocket communication.
 
+```text
                     Login
                       │
                       ▼
@@ -155,10 +157,13 @@ The application uses JWT-based authentication for securing HTTP and WebSocket co
                       │
                       ▼
           Authenticated Principal
+```
 
 Passwords are never stored as plain text. They are encoded using BCrypt before being persisted.
 
-💬 Private Messaging Flow
+## 💬 Private Messaging Flow
+
+```text
 Sender
    │
    │ WebSocket / STOMP
@@ -178,6 +183,7 @@ Controller
         ┌─────┴─────┐
         ▼           ▼
     Recipient     Sender
+```
 
 Private messages are stored in PostgreSQL and can later be retrieved through the conversation history endpoint.
 
@@ -297,6 +303,7 @@ Message
 Public messages do not belong to a private conversation, while private messages are associated with a conversation.
 
 📁 Project Structure
+```text
 src
 ├── main
 │   ├── java
@@ -341,6 +348,7 @@ src
             └── controllers
                 ├── AuthControllerTest
                 └── ControllerTest
+```
 ⚙️ Getting Started
 Prerequisites
 
