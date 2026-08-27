@@ -186,53 +186,78 @@ Controller
 ```
 
 Private messages are stored in PostgreSQL and can later be retrieved through the conversation history endpoint.
+## 🌐 REST API
 
-🌐 REST API
-Register
+### Register
+
+```http
 POST /auth/register
+```
 
 Creates a new user account.
 
-Example request:
+**Example request:**
 
+```json
 {
   "username": "GD",
   "password": "password"
 }
+```
 
-Example response:
+**Example response:**
 
+```text
 User registered successfully
-Login
+```
+
+---
+
+### Login
+
+```http
 POST /auth/login
+```
 
 Authenticates a user and returns a JWT.
 
-Example request:
+**Example request:**
 
+```json
 {
   "username": "GD",
   "password": "password"
 }
+```
 
-Example response:
+**Example response:**
 
+```text
 <JWT_TOKEN>
+```
 
 The returned token is used to authenticate protected requests and WebSocket connections.
 
-Get Conversation History
+---
+
+### Get Conversation History
+
+```http
 GET /messages/{recipient}
+```
 
 Returns the authenticated user's private conversation with the specified recipient.
 
-Example:
+**Example:**
 
+```http
 GET /messages/Rahul
 Authorization: Bearer <JWT_TOKEN>
+```
 
-Example response:
+**Example response:**
 
+```json
 [
   {
     "sender": "GD",
@@ -242,56 +267,104 @@ Example response:
     "timestamp": "2026-08-27T13:30:00"
   }
 ]
-🔌 WebSocket Configuration
-WebSocket Endpoint
+```
+
+---
+
+## 🔌 WebSocket Configuration
+
+### WebSocket Endpoint
+
+```text
 /ws
+```
 
 The application uses SockJS to establish the WebSocket connection.
 
-Application Destination Prefix
+### Application Destination Prefix
+
+```text
 /app
-Public Topic
+```
+
+### Public Topic
+
+```text
 /topic/public
+```
 
 Used for:
 
-Public chat messages
-JOIN notifications
-LEAVE notifications
-Online Users
+- Public chat messages
+- JOIN notifications
+- LEAVE notifications
+
+### Online Users
+
+```text
 /topic/users
+```
 
 Used to broadcast the currently connected users.
 
-Private Messages
+### Private Messages
+
+```text
 /user/queue/message
+```
 
 Used for one-to-one private messages.
 
-📡 STOMP Mappings
-Send Public Message
+---
+
+## 📡 STOMP Mappings
+
+### Send Public Message
+
+```text
 /app/chat.sendMessage
-Add User
+```
+
+### Add User
+
+```text
 /app/chat.addUser
-Send Private Message
+```
+
+### Send Private Message
+
+```text
 /app/chat.privateMessage
-🗄️ Database Model
+```
+
+---
+
+## 🗄️ Database Model
 
 The application uses PostgreSQL with JPA/Hibernate.
 
-User
+### User
+
+```text
 User
  ├── id
  ├── username
  └── password
-Conversation
+```
+
+### Conversation
+
+```text
 Conversation
  ├── id
  └── members
+```
 
 A conversation contains the users participating in a private conversation.
 
-Message
+### Message
+
+```text
 Message
  ├── id
  ├── sender
@@ -299,10 +372,14 @@ Message
  ├── content
  ├── messageType
  └── timestamp
+```
 
 Public messages do not belong to a private conversation, while private messages are associated with a conversation.
 
-📁 Project Structure
+---
+
+## 📁 Project Structure
+
 ```text
 src
 ├── main
@@ -349,11 +426,69 @@ src
                 ├── AuthControllerTest
                 └── ControllerTest
 ```
-⚙️ Getting Started
-Prerequisites
+
+---
+
+## ⚙️ Getting Started
+
+### Prerequisites
 
 Make sure you have the following installed:
 
-Java 17+
-Maven
-PostgreSQL
+- Java 17+
+- Maven
+- PostgreSQL
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-repository-url>
+```
+
+Navigate into the project:
+
+```bash
+cd <project-directory>
+```
+
+### 2. Configure PostgreSQL
+
+Create a PostgreSQL database for the application.
+
+Then configure the database connection in:
+
+```text
+src/main/resources/application.properties
+```
+
+Example:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/chatdb
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
+
+> **Important:** Do not commit real database credentials or JWT secrets to the repository.
+
+### 3. Run the Application
+
+Using Maven:
+
+```bash
+./mvnw spring-boot:run
+```
+
+On Windows:
+
+```bash
+mvnw.cmd spring-boot:run
+```
+
+The application runs on:
+
+```text
+http://localhost:8082
+```
+
+Open the application in your browser and create an account.
