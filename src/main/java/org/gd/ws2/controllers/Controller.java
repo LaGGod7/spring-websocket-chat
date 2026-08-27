@@ -123,7 +123,7 @@ public class Controller {
                 .conversation(conversation)
                 .content(message.getContent())
                 .messageType(message.getMessageType())
-                .timestamp(message.getTimestamp())
+                .timestamp(LocalDateTime.now())
                 .build();
         chatMessageRepository.save(savedMessage);
         ChatMessage response = new ChatMessage();
