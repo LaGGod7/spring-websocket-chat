@@ -6,6 +6,7 @@ import org.gd.ws2.Entity.Conversation;
 import org.gd.ws2.Entity.Message;
 import org.gd.ws2.Entity.User;
 import org.gd.ws2.Service.ConversationService;
+import org.gd.ws2.exception.UserNotFoundException;
 import org.gd.ws2.repository.ChatMessageRepository;
 import org.gd.ws2.repository.ConversationRepository;
 import org.gd.ws2.repository.UserRepository;
@@ -30,16 +31,19 @@ public class Controller {
     private final WebSocketUserService userService;
     private final SimpMessageSendingOperations messagingTemplate;
     private final UserRepository userRepository;
-    private final ConversationService  conversationService;
+    private final ConversationService conversationService;
     private final ConversationRepository conversationRepository;
 
 
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/public")
-    public void sendPublicMessage(@Payload ChatMessage message,Principal principal){
+    public void sendPublicMessage(@Payload ChatMessage message, Principal principal) {
         User sender = userRepository
                 .findByUsername(principal.getName())
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                principal.getName()
+                        ));
         Message savedMessage = Message.builder()
                 .sender(sender)
                 .conversation(null)
@@ -66,18 +70,17 @@ public class Controller {
 
     @MessageMapping("/chat.addUser")
     @SendTo("/topic/public")
-    public ChatMessage  addUser(@Payload ChatMessage  message, SimpMessageHeaderAccessor headerAccessor, Principal principal){
+    public ChatMessage addUser(@Payload ChatMessage message, SimpMessageHeaderAccessor headerAccessor, Principal principal) {
         String username = principal.getName();
 
         headerAccessor.getSessionAttributes().put("username", username);
 
         User sender = userRepository
                 .findByUsername(username)
-                .orElseGet(() ->
-                        userRepository.save(
-                                new User(null, username)
-                        )
-                );
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                principal.getName()
+                        ));
 
 
         userService.addUserslist(headerAccessor);
@@ -91,16 +94,23 @@ public class Controller {
 
         return message;
     }
+
     @MessageMapping("/chat.privateMessage")
-    public void sendPrivateMessage(@Payload ChatMessage message, Principal principal){
+    public void sendPrivateMessage(@Payload ChatMessage message, Principal principal) {
         String username = principal.getName();
         User sender = userRepository
                 .findByUsername(username)
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                principal.getName()
+                        ));
 
         User recipient = userRepository
                 .findByUsername(message.getRecipient())
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                message.getRecipient()
+                        ));
 
         Conversation conversation =
                 conversationService.getOrCreateConversation(
@@ -109,12 +119,12 @@ public class Controller {
                 );
 
         Message savedMessage = Message.builder()
-                        .sender(sender)
-                           .conversation(conversation)
-                                        .content(message.getContent())
-                                                .messageType(message.getMessageType())
-                                                        .timestamp(message.getTimestamp())
-                                                                .build();
+                .sender(sender)
+                .conversation(conversation)
+                .content(message.getContent())
+                .messageType(message.getMessageType())
+                .timestamp(message.getTimestamp())
+                .build();
         chatMessageRepository.save(savedMessage);
         ChatMessage response = new ChatMessage();
 
@@ -126,17 +136,35 @@ public class Controller {
         response.setTimestamp(savedMessage.getTimestamp());
 
         message.setTimestamp(LocalDateTime.now());
-            messagingTemplate.convertAndSendToUser(response.getRecipient(),"/queue/message", response);
+        messagingTemplate.convertAndSendToUser(response.getRecipient(), "/queue/message", response);
+        messagingTemplate.convertAndSendToUser(
+                sender.getUsername(),
+                "/queue/message",
+                response
+        );
     }
-    @GetMapping("/messages/{user1}/{user2}")
+
+    @GetMapping("/messages/{recipient}")
     @ResponseBody
-    public List<ChatMessage> getConversation(@PathVariable String user1, @PathVariable String user2){
-        User sender = userRepository.findByUsername(user1).orElseThrow();
-        User recipient = userRepository.findByUsername(user2).orElseThrow();
+    public List<ChatMessage> getConversation(@PathVariable String recipient,
+                                             Principal principal) {
+        User sender = userRepository
+                .findByUsername(principal.getName())
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                principal.getName()
+                        ));
+
+        User receiver = userRepository
+                .findByUsername(recipient)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                recipient
+                        ));
         Optional<Conversation> conversation =
                 conversationRepository.findConversation(
                         sender,
-                        recipient
+                        receiver
                 );
         return conversation.map(value -> chatMessageRepository
                 .findByConversationOrderByTimestampAsc(value)
@@ -144,19 +172,8 @@ public class Controller {
                 .map(message -> {
                     ChatMessage dto = new ChatMessage();
                     dto.setSender(message.getSender().getUsername());
-
-                    User otherUser = message.getConversation()
-                            .getMembers()
-                            .stream()
-                            .filter(user ->
-                                    !user.getId().equals(
-                                            message.getSender().getId()
-                                    )
-                            )
-                            .findFirst()
-                            .orElseThrow();
                     dto.setRecipient(
-                            otherUser.getUsername()
+                            receiver.getUsername()
                     );
                     dto.setContent(message.getContent());
                     dto.setTimestamp(message.getTimestamp());
@@ -165,13 +182,12 @@ public class Controller {
                 }).toList()).orElseGet(List::of);
 
     }
+
     @GetMapping("/test")
     @ResponseBody
     public String test() {
         return "IT WORKS";
     }
-
-
 
 
 }

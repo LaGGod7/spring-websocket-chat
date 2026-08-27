@@ -23,26 +23,45 @@ const privateTab = document.querySelector('#privateTab');
 
 const chatTitle = document.querySelector('#chatTitle');
 const chatSubtitle = document.querySelector('#chatSubtitle');
-
+const passwordInput =
+    document.querySelector("#password");
 let selectedUser = null;
 let username = null;
 let stompClient = null;
 let onlineUsers = [];
-
+let jwt = null;
 const conversations ={};
 
-function connect(event) {
+
+async function connect(event) {
     event.preventDefault();
 
     username = usernameInput.value.trim();
-
-    if (!username) return;
+    const password = passwordInput.value.trim();
+    if (!username || !password) return;
+    const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    });
+    if (!response.ok) {
+        alert("Invalid username or password");
+        return;
+    }
+    jwt = await response.text();
 
     const socket = new SockJS("/ws");
     stompClient = Stomp.over(socket);
 
     stompClient.connect(
-        { username: username },
+        {
+            Authorization: "Bearer " + jwt
+        },
         onConnected
     );
 }
@@ -96,7 +115,7 @@ function onPrivateMessage(payload) {
 
         // 3. Only render if we're looking at that conversation
         if (conversationUser === selectedUser) {
-            loadConversation(selectedUser);
+            renderConversations(selectedUser);
             privateEmpty.style.display = 'none';
             showPrivateChat();
         }
@@ -233,9 +252,7 @@ function sendMessage(event) {
             {},
             JSON.stringify(chatMessage)
         );
-        console.log("BEFORE STORE:", chatMessage);
-        storePrivateMessage(chatMessage);
-        renderConversations(selectedUser);
+        privateEmpty.style.display = 'none';
 
         privateEmpty.style.display = 'none';
         // // Show own private message immediately.
@@ -275,7 +292,15 @@ function formatTimestamp(timestamp) {
 }
 async function loadConversation(user) {
 
-    const response = await fetch(`/messages/${username}/${user}`);
+    const response = await fetch(`/messages/${user}`, {
+        headers: {
+            Authorization: "Bearer " + jwt
+        }
+    });
+    if (!response.ok) {
+        console.log("Failed to load conversation:", response.status);
+        return;
+    }
     const messages =await response.json();
     conversations[user]={
         messages:messages,
